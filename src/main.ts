@@ -38,7 +38,7 @@ renderer.render(scene, camera);
  */
 //const background = new THREE.TextureLoader().load('/background.jpg');
 //scene.background = background;
-scene.background = new THREE.Color(0x000000);
+scene.background = new THREE.Color(0xF2F3F5);
 
 //add background stars
 function genStars(num: number) {
@@ -65,20 +65,20 @@ function genStars(num: number) {
 //add particles
 function genParticles(num: number) {
 	for (let i = 0; i < num; i++) {
-		const particleGeometry = new THREE.SphereGeometry(.02, 8, 8);
+		const particleGeometry = new THREE.SphereBufferGeometry(.1, 8, 8);
 		const particleMaterial = new THREE.MeshBasicMaterial({
-			color: 0xFFFFFF,
+			color: 0x000000,
 			wireframe: true
 		});
 		const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-		const x = (Math.random() * (40)) - 20;
-		const y = -(Math.random() * 13) - 20;
-		const z = (-Math.random() * 10);
+		const x = (Math.random() * (120)) - 60;
+		const y = -(Math.random() * 100) + 20;
+		const z = (-Math.random() * 10) - 30;
 		particle.position.set(x, y, z);
 		scene.add(particle);
 	}
 }
-genParticles(150);
+genParticles(20);
 
 /**
  * Light Source
@@ -89,12 +89,12 @@ scene.add(ambientLight);
 /**
  * Torus
  */
-const geometry = new THREE.TorusGeometry(1, .5, 16, 100);
-const material = new THREE.MeshToonMaterial({
+const torusGeometry = new THREE.TorusBufferGeometry(1, .5, 16, 100);
+const torusMaterial = new THREE.MeshToonMaterial({
 	color: 0xff0000,
 	wireframe: true
 });
-const torus0 = new THREE.Mesh(geometry, material);
+const torus0 = new THREE.Mesh(torusGeometry, torusMaterial);
 torus0.position.set(3, 1, 0);
 updatables.push(torus0);
 scene.add(torus0);
@@ -105,19 +105,34 @@ scene.add(torus0);
 };
 
 /**
- * pfp cube
+ * Black background plane
  */
-/**
-const geometryCube = new THREE.BoxGeometry(10, 10, 10);
-const pfpTexture = new THREE.TextureLoader().load('/pfp.jpg');
-const geometryMesh = new THREE.MeshBasicMaterial({
-	map: pfpTexture
+const planeGeometry = new THREE.PlaneBufferGeometry(25, 15);
+const planeMaterial = new THREE.MeshBasicMaterial({
+	color: 0x000000
 });
-const pfpCube = new THREE.Mesh(geometryCube, geometryMesh);
-pfpCube.position.x = 10;
-pfpCube.position.y = 10;
-//scene.add(pfpCube); 
-*/
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.position.set(0, 0, -2);
+scene.add(plane);
+
+/**
+ * TorusKnot
+ */
+const torusKnotGeometry = new THREE.TorusKnotBufferGeometry(.8, .2, 100, 20);
+const torusKnotMesh = new THREE.MeshToonMaterial({
+	color: 0x00000FF,
+	wireframe: true
+});
+const torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
+torusKnot.position.set(-15, -15, 0);
+updatables.push(torusKnot);
+scene.add(torusKnot);
+(torusKnot as any).tick = (delta: number) => {
+	torusKnot.rotation.x += -.1 * delta;
+	torusKnot.rotation.y += -.3 * delta;
+	torusKnot.rotation.z += 2 * delta;
+};
+
 
 /**
  * helpers
@@ -183,35 +198,33 @@ const timeLineScripts: {
 	animationFun: () => void;
 }[] = [];
 
-timeLineScripts.push({
+const torusScript = {
 	start: 0.00,
 	end: 0.1,
 	animationFun: () => {
-		torus0.position.x = lerp(3, -10, scalePercent(0.00, 0.1, scrollPercent));
-		torus0.position.y = lerp(1, -5, scalePercent(0.00, 0.1, scrollPercent));
+		torus0.position.x = lerp(3, -10, scalePercent(torusScript.start, torusScript.end, scrollPercent));
+		torus0.position.y = lerp(1, -5, scalePercent(torusScript.start, torusScript.end, scrollPercent));
 	}
-});
-let isDark = true;
+};
+timeLineScripts.push(torusScript);
+
+const torusKnotScript = {
+	start: 0.15,
+	end: 0.25,
+	animationFun: () => {
+		torusKnot.position.x = lerp(-10, 2, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+		torusKnot.position.y = lerp(-10, -15, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+	}
+};
+timeLineScripts.push(torusKnotScript);
+
 function playTimeLineAnimations() {
 	for (const script of timeLineScripts) {
 		if (scrollPercent >= script.start && scrollPercent < script.end) {
 			script.animationFun();
 		}
 	}
-	if (scrollPercent >= .45 && scrollPercent <= .55) {
-		
-		if (isDark) {
-			console.log("hi")
-			const background = new THREE.TextureLoader().load('/background.jpg');
-			scene.background = background;
-			isDark = false;
-		}
-		else {
-			scene.background = new THREE.Color(0x000000);
-			isDark = true;
-		}
-		
-	}
+
 }
 
 
