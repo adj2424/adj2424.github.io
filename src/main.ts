@@ -1,6 +1,5 @@
 import './style.css';
 import * as THREE from 'three';
-import { Mesh } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 
@@ -26,7 +25,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 //all child objects where it will be animated through tick method
-let updatables: Mesh[] = [];
+let updatables: any[] = [];
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(windowSize.width, windowSize.height);
@@ -107,31 +106,44 @@ scene.add(torus0);
 /**
  * Black background plane
  */
-const planeGeometry = new THREE.PlaneBufferGeometry(25, 15);
+const planeGeometry = new THREE.PlaneBufferGeometry(25, 43);
 const planeMaterial = new THREE.MeshBasicMaterial({
-	color: 0x000000
+	color: 0x36454F
 });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.position.set(0, 0, -2);
+plane.position.set(0, -30, -3);
 scene.add(plane);
 
 /**
  * TorusKnot
  */
-const torusKnotGeometry = new THREE.TorusKnotBufferGeometry(.8, .2, 100, 20);
+const torusKnotGeometry = new THREE.TorusKnotBufferGeometry(.4, .05, 100, 20);
 const torusKnotMesh = new THREE.MeshToonMaterial({
 	color: 0x00000FF,
 	wireframe: true
 });
-const torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
-torusKnot.position.set(-15, -15, 0);
-updatables.push(torusKnot);
-scene.add(torusKnot);
-(torusKnot as any).tick = (delta: number) => {
-	torusKnot.rotation.x += -.1 * delta;
-	torusKnot.rotation.y += -.3 * delta;
-	torusKnot.rotation.z += 2 * delta;
-};
+const torusKnot0 = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
+const torusKnot1 = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
+const torusKnot2 = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
+const torusKnot3 = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
+const torusKnot4 = new THREE.Mesh(torusKnotGeometry, torusKnotMesh);
+torusKnot0.position.set(6, -2, 0);
+torusKnot1.position.set(8, -2, 0);
+torusKnot2.position.set(10, -2, 0);
+torusKnot3.position.set(12, -2, 0);
+torusKnot4.position.set(14, -2, 0);
+const torusKnotGroup = new THREE.Group();
+torusKnotGroup.position.x = 0;
+torusKnotGroup.add(torusKnot0, torusKnot1, torusKnot2, torusKnot3, torusKnot4);
+scene.add(torusKnotGroup);
+updatables.push(torusKnotGroup);
+(torusKnotGroup as any).tick = (delta: number) => {
+	if (torusKnotGroup.position.x < -22) {
+		torusKnotGroup.position.x = 4;
+	}
+	torusKnotGroup.position.x -= 2 * delta;
+}
+
 
 
 /**
@@ -209,11 +221,13 @@ const torusScript = {
 timeLineScripts.push(torusScript);
 
 const torusKnotScript = {
-	start: 0.15,
+	start: 0.10,
 	end: 0.25,
 	animationFun: () => {
-		torusKnot.position.x = lerp(-10, 2, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
-		torusKnot.position.y = lerp(-10, -15, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+		torusKnotGroup.position.x = lerp(6, -35, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+		//torusKnotGroup.position.y = lerp(5, -25, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+		//torusKnot0.position.x = lerp(-10, 2, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+		//torusKnot0.position.y = lerp(-10, -15, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
 	}
 };
 timeLineScripts.push(torusKnotScript);
@@ -226,7 +240,6 @@ function playTimeLineAnimations() {
 	}
 
 }
-
 
 /**
  * animation
@@ -255,4 +268,3 @@ renderer.setAnimationLoop(() => {
 	cameraGroup.position.y += (parallaxY - cameraGroup.position.y * delta * 30); //idk y it works xd
 	renderer.render(scene, camera);
 });
-

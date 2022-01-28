@@ -6,7 +6,7 @@ canvas {
 
 :root {
   font-family: 'Cabin', sans-serif;
-  --light-color: #FFFFFF;
+  --light-color: #36454F;
 }
 body {
   overflow-x: hidden;
@@ -18,7 +18,7 @@ main {
 header {
   text-transform: uppercase;
   align-items: center;
-  height: 160vh;
+  height: 350vh;
   position: relative;
   color: var(--light-color);
   font-size: 7vmin;
@@ -35,7 +35,7 @@ header {
 }
 
 .detail {
-  height: 100vh;
+  height: 150vh;
   position: relative;
   text-transform: lowercase;
   color: var(--primary-color);
