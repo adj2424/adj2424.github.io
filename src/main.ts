@@ -37,7 +37,7 @@ renderer.render(scene, camera);
  */
 //const background = new THREE.TextureLoader().load('/background.jpg');
 //scene.background = background;
-scene.background = new THREE.Color(0xF2F3F5);
+scene.background = new THREE.Color(0xEFE2BA);
 
 //add background stars
 function genStars(num: number) {
@@ -103,16 +103,6 @@ scene.add(torus0);
 	torus0.rotation.z += 2 * delta;
 };
 
-/**
- * Black background plane
- */
-const planeGeometry = new THREE.PlaneBufferGeometry(25, 43);
-const planeMaterial = new THREE.MeshBasicMaterial({
-	color: 0x36454F
-});
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.position.set(0, -30, -3);
-scene.add(plane);
 
 /**
  * TorusKnot
@@ -143,8 +133,43 @@ updatables.push(torusKnotGroup);
 	}
 	torusKnotGroup.position.x -= 2 * delta;
 }
+/**
+ * Dark background plane
+ */
+ const planeGeometry = new THREE.PlaneBufferGeometry(25, 40);
+ const planeMaterial = new THREE.MeshBasicMaterial({
+	 color: 0x4056A1
+ });
+ const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+ plane.position.set(0, -28, -3);
+ scene.add(plane);
+/**
+ * Light background plane
+ */
+const blankPlane = new THREE.Mesh(
+	new THREE.PlaneBufferGeometry(24, 25),
+	new THREE.MeshBasicMaterial({
+		color: 0xC5CBE3
+	})
+);
+blankPlane.position.set(2, -23, -4);
+scene.add(blankPlane);
 
-
+/**
+ * Cone
+ */
+const coneGeometry = new THREE.ConeBufferGeometry(1, 3, 15);
+const coneMaterial = new THREE.MeshBasicMaterial({
+	color: 0xFFFF33,
+	wireframe: true
+});
+const cone  = new THREE.Mesh(coneGeometry, coneMaterial);
+cone.position.set(5, -15, -2);
+(cone as any).tick = (delta: number) => {
+	cone.rotation.y += delta * 1;
+}
+updatables.push(cone);
+scene.add(cone);
 
 /**
  * helpers
@@ -152,7 +177,6 @@ updatables.push(torusKnotGroup);
 const gridHelper = new THREE.GridHelper(500);
 //const controls = new OrbitControls(camera, renderer.domElement);
 scene.add(gridHelper);
-
 
 /**
  * resize window
@@ -200,7 +224,7 @@ function lerp(min: number, max: number, ratio: number): number {
 	return (1 - ratio) * min + ratio * max;
 }
 // fit lerp to start and end at scroll percentages
-function scalePercent(start: number, end: number, scrollPercent: number): number {
+function scalePercent(start: number, end: number): number {
 	return (scrollPercent - start) / (end - start);
 }
 
@@ -214,23 +238,33 @@ const torusScript = {
 	start: 0.00,
 	end: 0.1,
 	animationFun: () => {
-		torus0.position.x = lerp(3, -10, scalePercent(torusScript.start, torusScript.end, scrollPercent));
-		torus0.position.y = lerp(1, -5, scalePercent(torusScript.start, torusScript.end, scrollPercent));
+		torus0.position.x = lerp(3, -10, scalePercent(torusScript.start, torusScript.end));
+		torus0.position.y = lerp(1, -5, scalePercent(torusScript.start, torusScript.end));
 	}
 };
 timeLineScripts.push(torusScript);
 
-const torusKnotScript = {
-	start: 0.10,
-	end: 0.25,
-	animationFun: () => {
-		torusKnotGroup.position.x = lerp(6, -35, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
-		//torusKnotGroup.position.y = lerp(5, -25, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
-		//torusKnot0.position.x = lerp(-10, 2, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
-		//torusKnot0.position.y = lerp(-10, -15, scalePercent(torusKnotScript.start, torusKnotScript.end, scrollPercent));
+const moveCameraScript = {
+	start: 0.25,
+	end: 0.35,
+	animationFun:() => {
+		plane.position.x = lerp(0, -19, scalePercent(moveCameraScript.start, moveCameraScript.end));
 	}
-};
-timeLineScripts.push(torusKnotScript);
+}
+timeLineScripts.push(moveCameraScript);
+
+const movePlaneCameraScript = {
+	start: 0.45,
+	end: 0.6,
+	animationFun:() => {
+		blankPlane.position.x = lerp(2, 40, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end));
+		blankPlane.position.y = lerp(-23, -10, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end));
+		//camera.position.x = lerp(18, 0, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end, scrollPercent));
+		plane.position.x = lerp(-19, -30, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end));
+	}
+}
+timeLineScripts.push(movePlaneCameraScript);
+
 
 function playTimeLineAnimations() {
 	for (const script of timeLineScripts) {
@@ -238,7 +272,6 @@ function playTimeLineAnimations() {
 			script.animationFun();
 		}
 	}
-
 }
 
 /**
@@ -251,20 +284,21 @@ function tick(delta: number) {
 		(obj as any).tick(delta);
 	}
 }
+const SCROLL_SENS = 8;
 renderer.setAnimationLoop(() => {
 	//delta for consistency
 	const delta = clock.getDelta();
 	tick(delta);
 	//animate camera scroll
-	const SCROLL_SENS = 8;
 	camera.position.y = -currScrollY / windowSize.height * SCROLL_SENS;
 	//scroll based animation timeline
 	playTimeLineAnimations();
+	console.log(camera.position.x)
 
 	//animate cursor parallax
 	const parallaxX = -cursor.x;
 	const parallaxY = cursor.y;
-	cameraGroup.position.x += (parallaxX - cameraGroup.position.x * delta * 50); //created camera group to get parallax and scroll working
-	cameraGroup.position.y += (parallaxY - cameraGroup.position.y * delta * 30); //idk y it works xd
+	//cameraGroup.position.x += (parallaxX - cameraGroup.position.x * delta * 30); //created camera group to get parallax and scroll working
+	//cameraGroup.position.y += (parallaxY - cameraGroup.position.y * delta * 30); //idk y it works xd
 	renderer.render(scene, camera);
 });
