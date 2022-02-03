@@ -9,7 +9,7 @@ canvas {
   --header-size: 7vmin;
   --detail-size: 4vmin;
   --dark-color: #4056A1;
-  --light-color: #C5CBE3;
+  --light-color: #FFFFFF;
 
 }
 /**
@@ -64,7 +64,7 @@ header {
   transform: rotate(-90deg);
   text-transform: uppercase;
   font-size: 10vmin;
-  padding-top: 0.1%;
+  padding-top: 0.01%;
   height:150vh;
 }
 

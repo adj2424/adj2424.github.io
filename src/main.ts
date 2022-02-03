@@ -17,7 +17,7 @@ const cameraGroup = new THREE.Group();
 scene.add(cameraGroup);
 
 const camera = new THREE.PerspectiveCamera(75, windowSize.width / windowSize.height, 0.1, 1000);
-cameraGroup.add(camera);
+//cameraGroup.add(camera);
 
 const renderer = new THREE.WebGLRenderer({
 	canvas: document.querySelector('#bg')!,
@@ -140,20 +140,20 @@ updatables.push(torusKnotGroup);
  const planeMaterial = new THREE.MeshBasicMaterial({
 	 color: 0x4056A1
  });
- const plane = new THREE.Mesh(planeGeometry, planeMaterial);
- plane.position.set(0, -28, -3);
- scene.add(plane);
+ const darkPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+ darkPlane.position.set(0, -28, -3);
+ scene.add(darkPlane);
 /**
  * Light background plane
  */
-const blankPlane = new THREE.Mesh(
-	new THREE.PlaneBufferGeometry(24, 25),
+const lightPlane = new THREE.Mesh(
+	new THREE.PlaneBufferGeometry(24, 26),
 	new THREE.MeshBasicMaterial({
 		color: 0xC5CBE3
 	})
 );
-blankPlane.position.set(2, -23, -4);
-scene.add(blankPlane);
+lightPlane.position.set(2, -22, -4);
+scene.add(lightPlane);
 
 /**
  * Cone
@@ -164,7 +164,7 @@ const coneMaterial = new THREE.MeshBasicMaterial({
 	wireframe: true
 });
 const cone  = new THREE.Mesh(coneGeometry, coneMaterial);
-cone.position.set(5, -15, -2);
+cone.position.set(5, -16, -2);
 (cone as any).tick = (delta: number) => {
 	cone.rotation.y += delta * 1;
 }
@@ -205,23 +205,35 @@ window.addEventListener('mousemove', (event) => {
 	cursor.y = event.clientY / window.innerHeight - 0.5; //range of -.5, 5
 });
 
+
 /**
  * scroll animation
  */
 let currScrollY = window.scrollY;
 let maxY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 let scrollPercent = 0.0;
+let yy = 0;
+let deltaY = 0;
+
 window.addEventListener('scroll', () => {
 	currScrollY = window.scrollY;
 	scrollPercent = currScrollY / maxY;
+	//console.log(scrollPercent);
+	//scrollPercent = lerp(currScrollY, windowSize.height, 0.5);
 });
+window.addEventListener('wheel', (event) => {
+	deltaY = event.deltaY || event.deltaY * -1;
+	deltaY *= .5;
+});
+
+
 
 /**
  * scroll animation timeline
  */
 // linear interpolation function
 function lerp(min: number, max: number, ratio: number): number {
-	return (1 - ratio) * min + ratio * max;
+	return ((1 - ratio) * min + ratio * max);
 }
 // fit lerp to start and end at scroll percentages
 function scalePercent(start: number, end: number): number {
@@ -244,26 +256,29 @@ const torusScript = {
 };
 timeLineScripts.push(torusScript);
 
-const moveCameraScript = {
+const movePlaneScript = {
 	start: 0.25,
 	end: 0.35,
 	animationFun:() => {
-		plane.position.x = lerp(0, -19, scalePercent(moveCameraScript.start, moveCameraScript.end));
+		darkPlane.position.x = lerp(0, -19, scalePercent(0.250, 0.35));
+		//console.log([darkPlane.position.x, scrollPercent, lerp(0, -19, scalePercent(0.250, 0.35))])
+		//darkPlane.position.x = -scrollPercent * 100 + 25;
+
 	}
 }
-timeLineScripts.push(moveCameraScript);
+timeLineScripts.push(movePlaneScript);
 
-const movePlaneCameraScript = {
+const movePlanes = {
 	start: 0.45,
 	end: 0.6,
 	animationFun:() => {
-		blankPlane.position.x = lerp(2, 40, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end));
-		blankPlane.position.y = lerp(-23, -10, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end));
+		lightPlane.position.x = lerp(2, 40, scalePercent(movePlanes.start, movePlanes.end));
+		lightPlane.position.y = lerp(-23, -10, scalePercent(movePlanes.start, movePlanes.end));
 		//camera.position.x = lerp(18, 0, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end, scrollPercent));
-		plane.position.x = lerp(-19, -30, scalePercent(movePlaneCameraScript.start, movePlaneCameraScript.end));
+		darkPlane.position.x = lerp(-19, -30, scalePercent(movePlanes.start, movePlanes.end));
 	}
 }
-timeLineScripts.push(movePlaneCameraScript);
+timeLineScripts.push(movePlanes);
 
 
 function playTimeLineAnimations() {
@@ -284,16 +299,30 @@ function tick(delta: number) {
 		(obj as any).tick(delta);
 	}
 }
+
+
+
+let y = 0
+let p = 0
+window.addEventListener('wheel', (event) => {
+	y = event.deltaY * 0.0007;
+});
 const SCROLL_SENS = 8;
 renderer.setAnimationLoop(() => {
 	//delta for consistency
 	const delta = clock.getDelta();
 	tick(delta);
+
+
+
 	//animate camera scroll
+
+	p += y;
+	y*= .9;
 	camera.position.y = -currScrollY / windowSize.height * SCROLL_SENS;
+	//camera.position.y = -p * 4; 
 	//scroll based animation timeline
 	playTimeLineAnimations();
-	console.log(camera.position.x)
 
 	//animate cursor parallax
 	const parallaxX = -cursor.x;
