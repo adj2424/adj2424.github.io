@@ -225,9 +225,6 @@ window.addEventListener('wheel', (event) => {
 	deltaY = event.deltaY || event.deltaY * -1;
 	deltaY *= .5;
 });
-
-
-
 /**
  * scroll animation timeline
  */

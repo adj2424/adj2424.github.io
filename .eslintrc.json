@@ -1,0 +1,16 @@
+{
+    "extends": ["airbnb", "airbnb-typescript", "prettier"],
+    "plugins": ["prettier"],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "rules": {
+      "prettier/prettier": "error",
+      "no-unused-vars": "warn",
+      "no-console": "off",
+      "func-names": "off",
+      "no-process-exit": "off",
+      "object-shorthand": "off",
+      "class-methods-use-this": "off"
+    }
+  }
