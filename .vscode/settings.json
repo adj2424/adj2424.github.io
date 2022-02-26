@@ -4,5 +4,4 @@
         "Toon",
         "Wireframe"
     ],
-    "eslint.options": { "configFile": "C:/mydirectory/.eslintrc.json" }
 }
